@@ -226,3 +226,69 @@ context.drawImage(img,sx,sy,swidth,sheight,x,y,width,height)
 - width     # 可选，要使用的图像的宽度（伸展或缩小图像）
 - height    # 可选，要使用的图像的高度（伸展或缩小图像）
 ```
+
+
+
+### 实现随机粒子
+-   粒子特效的特点
+    -   粒子
+    -   规则图形
+    -   随机
+    -   数量多
+
+#### 实现一个随机粒子特效（实现随机粒子.html）
+· 创建全屏Canvas
+```
+var ctx = document.getElementById('canvas'),
+            content = ctx.getContext('2d'),
+            WIDTH,
+            HEIGHT;
+
+WIDTH = document.documentElement.clientWidth;
+HEIGHT = document.documentElement.clientHeight;
+
+ctx.width = WIDTH;
+ctx.height = HEIGHT;
+```
+· 设置Round_item类
+```
+Round_item类需要什么参数？（x,y,半径,透明度,index）
+    我们需要设置的是位置随机，透明度随机，半径随机的圆，
+    而为了区分不同的圆，我们还应该设置一个唯一的index参数
+
+function Round_item(index,x,y){
+    this.index = index
+    this.x = x
+    this.y = y
+    this.r = Math.random()*2 + 1
+    var alpha = (Math.floor(Math.random() * 10) + 1) / 10 / 2
+    this.color = 'rgba(255,255,255,' + alpha + ')';
+}
+
+此外我们还需要一个initRoundPopulation变量来设置round的个数，然后我们可以通过for循环来创建initRoundPopulation个圆
+```
+· 设置draw()方法
+```
+draw() → 画圆方法
+我们需要将draw()设置在Round_item的原型上，这样我们每个Round_item实例对象都拥有了draw()方法
+
+Round_item.prototype.draw = function () {
+    content.fillStyle = this.color;
+    content.shadowBlur = this.r * 2;
+    content.beginPath();
+    content.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
+    content.closePath();
+    content.fill();
+};
+```
+· 初始化init()函数
+```
+在init()函数中，我们的主要任务是创建单个的round，然后使用每一个round的draw方法
+
+function init() {
+    for(var i = 0; i < initRoundPopulation; i++ ){
+        round[i] = new Round_item(i,Math.random() * WIDTH,Math.random() * HEIGHT);
+        round[i].draw();
+    }
+}
+```
