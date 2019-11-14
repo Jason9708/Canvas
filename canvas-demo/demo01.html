@@ -1,0 +1,79 @@
+<!--
+    创建canvas画布
+-->
+
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+    <meta charset="utf-8">
+    <title>Demo01</title>
+    <style>
+        #canvas {
+            background: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id='canvas'></canvas>
+    <script>
+        var canvas = document.getElementById("canvas");
+        var context = canvas.getContext("2d");
+        var cx = canvas.width = 400;
+        var cy = canvas.height = 400;
+
+
+        /**  圆/点   **/
+        // context.beginPath();
+        // 点
+        // context.arc(100, 100, 1, 0, Math.PI * 2, true);
+        // 1/4 圆
+        // context.arc(100, 100, 50, 0, Math.PI * 0.5, false);
+        // 半圆
+        // context.arc(100, 100, 50, 0, Math.PI * 1, true);
+        // 圆
+        // context.arc(100, 100, 50, 0, Math.PI * 2, true);
+        // context.closePath();
+        // context.strokeStyle = 'rgb(255,255,255)';
+        // context.stroke();
+
+        /**  直线   **/
+        //context.beginPath()
+        // context.moveTo(50, 50)
+        // 棱形
+        // context.lineTo(100, 100)
+        // context.lineTo(150, 150)
+        // context.lineTo(150, 200)
+        // context.lineTo(100, 250)
+        // context.lineTo(50, 200)
+        // context.lineTo(50, 150)
+        // context.lineTo(100, 100)
+        // context.strokeStyle = 'white'
+        // context.stroke()
+
+
+        /**  绘制矩形   **/
+        // context.beginPath()
+        // context.fillStyle = '#fff'
+        // context.fillRect(10, 10, 100, 100) // 实心矩阵
+        // context.strokeStyle = '#fff'
+        // context.strokeRect(130, 10, 100, 100) // 空心矩阵
+
+        /** 播放器 **/
+        context.beginPath()
+        context.arc(100, 100, 20, 0, Math.PI * 2, true)
+        context.strokeStyle = '#fff'
+        context.stroke()
+        context.closePath()
+        context.beginPath()
+        context.lineTo(95, 90)
+        context.lineTo(110, 100)
+        context.lineTo(95, 110)
+        context.lineTo(95, 90)
+        context.fillStyle = 'white'
+        context.fill()
+    </script>
+</body>
+
+</html>
