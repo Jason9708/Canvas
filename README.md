@@ -33,6 +33,7 @@ Canvas对比svg，是通过javascript来绘制2D图形，Canvas只是一个HTML�
 -   小特效
 
 ### 第一次尝试
+****
 #### canvas-demo/demo01.html
 **圆、直线、弧、矩形、点**
 - 创建Canva画布
@@ -133,7 +134,6 @@ lineTo      # 添加一个新点，然后画布中创建从该点到最后指定
 -   fillRect(x,y,width,height)      # 绘制一个实心矩形
 -   strokeRect(x,y,width,height)    # 绘制一个空心矩形
 ```
-****
 #### canvas-demo/demo02.html
 **阴影、渐变**
 ```
@@ -177,7 +177,6 @@ grd.addColorStop(1,'white');
 context.fillStyle = grd;
 context.fillRect(100,100,200,200);
 ```
-****
 #### canvas-demo/demo03.html
 **图形转换（缩放，旋转）**
 ```
@@ -230,6 +229,7 @@ context.drawImage(img,sx,sy,swidth,sheight,x,y,width,height)
 
 
 ### 实现随机粒子
+****
 -   粒子特效的特点
     -   粒子
     -   规则图形
@@ -291,4 +291,265 @@ function init() {
         round[i].draw();
     }
 }
+
+最后调用init()实现随机粒子
+```
+
+### 让随机粒子动起来
+****
+· `animate()`函数
+```
+animate()的作用是帮助我们形成动画，在这个函数中，首先需要清除当前屏幕（使用清除函数content.clearRect()
+
+content.clearRect(x,y,width,height)
+    - x     # 要清除的矩形左上角的x坐标
+    - y     # 要清除的矩形左上角的y坐标
+    - width         # 要清除的矩形的宽度，以像素计
+    - height        # 要清除的矩形的高度，以像素计
+
+
+由于我们需要清除的是一整个屏幕，所以clearRect要这样用
+content.clearContent(0,0,WIDTH,HEIGHT)
+
+
+清除了屏幕内容之后就需要重新绘制图形了
+```
+· 实现粒子匀速上升
+```
+实现粒子匀速上升，实际上就是改变y坐标，并且在是需要匀速的
+
+我们将粒子位移的函数定义为move()，并且要写在Round_item的原型上，这样每个实例才都具有位移的能力
+
+位移函数有了，接下来就要实现'不断'位移的能力，实现动画的效果，就需要'不断'地进行清除再重绘，并且时间间隔不能过长
+```
+· 实现**不断**
+```
+想要实现不停位移的效果，大部分人可能会想到JavaScript中的setTimeout | setInterval，但它们都不够精确，由于它们内在的运行机制（具体了解Js的事件循环EventLoop），如果队列前面已经存在其他任务，那么动画就会出现延迟问题，因为动画代码需要等前面的任务完成后才执行
+
+所以我们需要另外一个函数 -- requestAnimationFrame()
+    # window.requestAnimationFrame()会告诉浏览器，你需要执行动画，
+    # 并请求浏览器调用指定的函数在下一次重绘之前更新动画。
+    # requestAnimationFrame()使用一个回调函数作为参数，这个回调函数会在浏览器重绘之前调用
+```
+```
+animate()
+
+function animate(){
+    // 清除屏幕
+    content.clearRect(0,0,WIDTH,HEIGHT)
+
+    for(var i in round){
+        round[i].move()
+    }
+    requestAnimationFrame(animate)
+}
+```
+· 创建`move()`
+```
+由于我们要实现一个匀速上升的动画，所以在move()中我们要完成y坐标的改变，并且设置边界条件
+
+当y坐标的值小于-10（或其他负值），则代表round已经超出了屏幕，这个时候我们要将其移动到屏幕的最底端，也就是重置位置，这样才可以保证我们屏幕的粒子数不变
+
+总结起来就是：一个粒子不断上升，到达顶部的时候再移动到最底部的循环过程
+```
+```
+move()
+
+Round_item.prototype.move = function(){
+    this.y -= 0.15      // 移动
+    if(this.y <= -10){
+        this.y = HEIGHT + 10     // 到顶重置位置
+    }
+    this.draw() // 重绘
+}
+```
+· 整体代码
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>匀速上升粒子动画</title>
+    <style>
+        html, body {
+            margin: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            background: black;
+        }
+    </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<script>
+    var ctx = document.getElementById('canvas'),
+        content = ctx.getContext('2d'),
+        round = [],
+        WIDTH,
+        HEIGHT,
+        initRoundPopulation = 80;
+
+
+    WIDTH = document.documentElement.clientWidth;
+    HEIGHT = document.documentElement.clientHeight;
+
+    ctx.width = WIDTH;
+    ctx.height = HEIGHT;
+
+    function Round_item(index, x, y) {
+        this.index = index;
+        this.x = x;
+        this.y = y;
+        this.r = Math.random() * 2 + 1;
+        var alpha = (Math.floor(Math.random() * 10) + 1) / 10 / 2;
+        this.color = "rgba(255,255,255," + alpha + ")";
+    }
+
+    Round_item.prototype.draw = function () {
+        content.fillStyle = this.color;
+        content.shadowBlur = this.r * 2;
+        content.beginPath();
+        content.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
+        content.closePath();
+        content.fill();
+    };
+
+    function animate() {
+        content.clearRect(0, 0, WIDTH, HEIGHT);
+
+        for (var i in round) {
+            round[i].move();
+        }
+        requestAnimationFrame(animate)
+    }
+
+    Round_item.prototype.move = function () {
+        this.y -= 0.15;
+        if (this.y <= -10) {
+            this.y = HEIGHT + 10;
+        }
+        this.draw();
+    };
+
+
+    function init() {
+        for (var i = 0; i < initRoundPopulation; i++) {
+            round[i] = new Round_item(i, Math.random() * WIDTH, Math.random() * HEIGHT);
+            round[i].draw();
+        }
+        animate();
+
+    }
+
+    init();
+</script>
+</body>
+</html>
+```
+
+### 实现鼠标与屏幕互动动画
+****
+```
+效果概述：
+    鼠标移动，经过的地方创建一个圆，圆的半径大小由小变大，达到某个固定大小时该圆消失，圆的颜色随机变化
+```
+#### 创建Canvas元素（全屏）
+```
+var canvas = document.getElementById('canvas'),
+    ctx = canvas.getContext('2d'),
+    WIDTH = canvas.width = document.documentElement.clientWidth,
+    HEIGHT = canvas.height = document.documentElement.clientHeight,
+    para = {
+        num: 100,
+        color: false,    //  颜色  如果是false 则是随机渐变颜色
+        r: 0.9,          //   圆每次增加的半径 
+        o: 0.09,         //      判断圆消失的条件，数值越大，消失的越快
+        a: 1
+    },
+    color,
+    color2,
+    round_arr = [];     // 存放圆的数组 
+```
+#### 监听`onmousemove`事件
+```
+需求：在鼠标移动的过程中，不断在鼠标滑过的位置产生一个逐渐变大的圆
+
+Canvas中创建动画的方式就是不断的清除屏幕然后重绘
+
+由于移动的轨迹是由一个个圆构成，那我们就应该使用数组存储圆的信息（xy坐标，半径），然后在鼠标移动的时候将鼠标的位置信息存放在数组中
+
+所以监听onmousemove事件就是为了拿到鼠标的信息
+```
+```
+window.onmousemove = function(event) {
+    Xmouse = event.clientX  // 当前在屏幕的x位置
+    Ymouse = event.clientY  // 当前在屏幕的y位置
+
+    // 将信息存入圆数组
+    round_arr.push({
+        Xmouse:Xmouse,
+        Ymouse:Ymouse,
+        r:para.r
+        o:1
+    })
+}
+```
+· 设置`color
+```
+在onmousemove中，我们已经将坐标信息和半径存入round_arr圆数组中，接下来就设置颜色了
+
+在para对象里，默认的color是false，说明圆的颜色是随机的，如果color不为false，则圆的颜色就为color的颜色
+```
+```
+if(para.color){
+    color2 = para.color
+}else{
+    color = Math.random() * 360
+}
+```
+```
+那么如何设置颜色渐变呢？
+if (!para.color) {
+    color += .1;
+    color2 = 'hsl(' + color + ',100%,80%)';
+}
+
+如果要让颜色变，则要将颜色改变的代码放在一个一直执行的函数
+```
+· `animate()`函数
+```
+animate()负责动画的实现，我们就是在该函数里写动画
+```
+```
+完整animate函数代码如下：
+function animate() {
+
+    if (!para.color) {         # 设置颜色
+        color += .1
+        color2 = 'hsl(' + color + ',100%,80%)'
+    }
+
+    ctx.clearRect(0, 0, WIDTH, HEIGHT)      # 清除屏幕
+
+    for (var i = 0; i < round_arr.length; i++) {
+
+        ctx.fillStyle = color2
+        ctx.beginPath()
+        ctx.arc( round_arr[i].Xmouse ,round_arr[i].Ymouse,round_arr[i].r,0, Math.PI * 2)        # 画圆
+        ctx.closePath()
+        ctx.fill()
+        round_arr[i].r += para.r    # 增大半径
+        round_arr[i].o -= para.o    # 消失快慢
+
+        if( round_arr[i].o <= 0){       # 移除圆
+            round_arr.splice(i,1)
+            i--
+        }
+    }
+
+    window.requestAnimationFrame(animate)
+}
+
 ```

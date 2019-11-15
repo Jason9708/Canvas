@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>鼠标屏幕互动动画</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        
+        #canvas {
+            background: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        var canvas = document.getElementById('canvas'),
+            ctx = canvas.getContext('2d'),
+            WIDTH = canvas.width = document.documentElement.clientWidth,
+            HEIGHT = canvas.height = document.documentElement.clientHeight,
+            para = {
+                num: 100,
+                color: false, //  颜色  如果是false 则是随机渐变颜色
+                r: 0.9,
+                o: 0.09, //  判断圆消失的条件，数值越大，消失的越快
+                a: 1,
+
+            },
+            color,
+            circleColor,
+            round_arr = [];
+
+        window.onmousemove = function(event) {
+            Xmouse = event.clientX
+            Ymouse = event.clientY
+
+            round_arr.push({
+                Xmouse: Xmouse,
+                Ymouse: Ymouse,
+                r: para.r,
+                o: 1
+            })
+        }
+
+        // 判断参数中是否设置color，设置则使用该color，否则为随机
+        if (para.color) {
+            circleColor = para.color
+        } else {
+            color = Math.random() * 360
+        }
+
+        function animate() {
+            if (!para.color) {
+                color += .1
+                circleColor = 'hsl(' + color + ',100%,80%)'
+            }
+
+            ctx.clearRect(0, 0, WIDTH, HEIGHT) // 清除屏幕
+
+            for (var i = 0; i < round_arr.length; i++) {
+                ctx.fillStyle = circleColor
+                ctx.beginPath() // 开始路径
+                ctx.arc(round_arr[i].Xmouse, round_arr[i].Ymouse, round_arr[i].r, 0, Math.PI * 2) // 画圆
+                ctx.closePath() // 结束路径
+                ctx.fill()
+                round_arr[i].r += para.r // 增大圆
+                round_arr[i].o -= para.o //  消失时间变快
+
+                if (round_arr[i].o <= 0) {
+                    round_arr.splice(i, 1);
+                    i--;
+                }
+            }
+
+            window.requestAnimationFrame(animate)
+        }
+
+        animate()
+    </script>
+</body>
+
+</html>
