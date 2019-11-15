@@ -527,7 +527,7 @@ function animate() {
 
     if (!para.color) {         # 设置颜色
         color += .1
-        color2 = 'hsl(' + color + ',100%,80%)'
+        circleColor = 'hsl(' + color + ',100%,80%)'
     }
 
     ctx.clearRect(0, 0, WIDTH, HEIGHT)      # 清除屏幕
