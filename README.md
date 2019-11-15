@@ -466,10 +466,9 @@ var canvas = document.getElementById('canvas'),
         color: false,    //  颜色  如果是false 则是随机渐变颜色
         r: 0.9,          //   圆每次增加的半径 
         o: 0.09,         //      判断圆消失的条件，数值越大，消失的越快
-        a: 1
     },
     color,
-    color2,
+    circleColor,
     round_arr = [];     // 存放圆的数组 
 ```
 #### 监听`onmousemove`事件
@@ -504,7 +503,7 @@ window.onmousemove = function(event) {
 ```
 ```
 if(para.color){
-    color2 = para.color
+    circleColor = para.color
 }else{
     color = Math.random() * 360
 }
@@ -513,7 +512,7 @@ if(para.color){
 那么如何设置颜色渐变呢？
 if (!para.color) {
     color += .1;
-    color2 = 'hsl(' + color + ',100%,80%)';
+    circleColor = 'hsl(' + color + ',100%,80%)';
 }
 
 如果要让颜色变，则要将颜色改变的代码放在一个一直执行的函数
@@ -535,7 +534,7 @@ function animate() {
 
     for (var i = 0; i < round_arr.length; i++) {
 
-        ctx.fillStyle = color2
+        ctx.fillStyle = circleColor 
         ctx.beginPath()
         ctx.arc( round_arr[i].Xmouse ,round_arr[i].Ymouse,round_arr[i].r,0, Math.PI * 2)        # 画圆
         ctx.closePath()
